@@ -1,4 +1,3 @@
-
 CREATE TABLE pogoda(
 id_pogoda INT IDENTITY(1,1) PRIMARY KEY,
 wiatr INT NOT NULL,
@@ -433,7 +432,6 @@ ON kierowca AFTER INSERT
 AS
 BEGIN
 	DECLARE @idzespol INT
-	SET @idzespol=-1
 	SELECT @idzespol=zespol
 	FROM inserted WHERE zespol=3
 		IF @idzespol=3
