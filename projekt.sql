@@ -1,3 +1,4 @@
+
 CREATE TABLE pogoda(
 id_pogoda INT IDENTITY(1,1) PRIMARY KEY,
 wiatr INT NOT NULL,
@@ -229,12 +230,6 @@ INSERT INTO awaria VALUES(6,'FXO','awaria pompy paliwa','Piotrek Krzyżanowski',
 --select * from awaria;
 
 
-/*
-4 wyzwalacze [8 pkt]
-2 tabele przestawne (instrukcja pivot) [2 pkt]
-co najmniej 2 razy:
-b) IF-ELSE, c) CASE, d) WHILE, e) kursor
-*/
 
 --widok1 wyświetla kierowców którzy brali udział w wyścigach wraz z ilością ich startów
 IF EXISTS (SELECT * FROM SYS.views WHERE name='widok1')
@@ -248,7 +243,7 @@ ON k.id_kierowca=u.kierowca
 GROUP BY k.id_kierowca,k.imie,k.nazwisko
 HAVING COUNT(u.kierowca)>0;
 GO
---wywołanie
+--wywołanie 'widok1'
 select imie,nazwisko,starty from widok1
 ORDER BY starty DESC;
 
@@ -265,7 +260,7 @@ ON k.zespol=z.id_zespol
 GROUP BY z.nazwa_zespolu,z.id_zespol
 HAVING COUNT(k.zespol)>=1;
 GO
---wywołanie
+--wywołanie 'widok2'
 select nazwa_zespolu,kierowcy from widok2;
 
 --funkcja1 podaje łączną sumę wszystkich kierowców w bazie danych
@@ -277,7 +272,7 @@ BEGIN
   RETURN @oblicz
 END;
 GO
---wywołanie
+--wywołanie funkcji 'ile kierowcow()'
 SELECT dbo.ile_kierowcow() AS 'ilosc kierowcow';
 
 --funkcja2 opisuje warunki pogodowe na każdym z torów
@@ -296,7 +291,7 @@ SET @tekst='na torze '+@nazwa+' wiał wiatr z prędkością '+
 RETURN @tekst
 END; 
 GO
---wywołanie
+--wywołanie funkcji 'tekst()'
 SELECT dbo.tekst(nazwa,wiatr,temperatura,zachmurzenie) AS 'warunki pogodowe'
 FROM tor_wyscigowy t JOIN pogoda p
 ON t.pogoda=p.id_pogoda
@@ -314,14 +309,13 @@ BEGIN
 	RETURN @wiek
 END;
 GO
---wywołanie
+--wywołanie funkcji 'wiek()'
 SELECT imie,nazwisko, dbo.wiek(data_ur) AS 'wiek kierowcy'
 FROM kierowca;
 GO
 
 
---funkcja 4 która nie działa  
-DROP FUNCTION Info;
+--funkcja 4 która zlicza ile pojazdów ma pojemność silnika między podaną minimalną a maksymalną wartością
 CREATE FUNCTION info(
 @min INT,
 @max INT
@@ -330,14 +324,12 @@ RETURNS VARCHAR(30)
 AS
 BEGIN
 	DECLARE @tekst VARCHAR(50)
-	SET @tekst=
-	(
-	SELECT nazwa FROM bolid WHERE poj_silnika<=@max AND poj_silnika>=@min)
+	SET @tekst= (SELECT COUNT (poj_silnika)FROM bolid WHERE poj_silnika<=@max AND poj_silnika>=@min)
 	RETURN @tekst
 END;
 GO
---wywołanie ;)
-SELECT dbo.info(1816,2000) AS informacje;
+--wywołanie funkcji 'info()'
+SELECT dbo.info(1800,2000) AS informacje;
 GO
 
 --procedura1 usuwa zespoły, które nie mają kierowców
@@ -348,7 +340,7 @@ WHERE id_zespol NOT IN (
    SELECT zespol FROM kierowca
 );
 GO
---wywołanie
+--wywołanie procedury 'usun zespol'
 EXEC usun_zespol;
 
 
@@ -363,7 +355,7 @@ ON w.tor_wyscigowy=t.id_tor_wyscigowy
 GROUP BY t.nazwa,w.il_okrazen,t.dlugosc
 );
 GO
---wywołanie
+--wywołanie procedury 'dlugosc'
 EXEC dlugosc;
 
 --procedura3 dodawanie nowego toru
@@ -376,7 +368,7 @@ CREATE PROCEDURE dodaj_tor
 AS
 INSERT tor_wyscigowy
 VALUES (@pogoda,@nazwa,@kraj,@dlugosc,@zakrety)
---wywolanie
+--wywolanie procedury 'dodaj tor'
 EXECUTE dodaj_tor '3','Imola','San Marino','8.7','11';
 
 --procedura4 dodawanie nowego zespołu
@@ -387,7 +379,7 @@ CREATE PROCEDURE dodaj_zespol
 AS
 INSERT zespol
 VALUES(@nazwa,@data,@zalozyciel)
---wywołanie
+--wywołanie procedury 'dodaj zespol'
 EXECUTE dodaj_zespol 'Ferrari','2013-05-05','Fernando Alonso';
 
 
@@ -449,7 +441,7 @@ INSERT INTO kierowca
 SELECT * FROM kierowca;
 
 
---wyzwalacz 3 który ogranicza poj. silnika dodawanych pojazdów wg. wymogów ligi
+--wyzwalacz3 który ogranicza poj. silnika dodawanych pojazdów wg. wymogów ligi
 CREATE TRIGGER ograniczenie
 ON bolid AFTER INSERT
 AS
@@ -467,6 +459,31 @@ GO
 --sprawdzenie wyzwalacza 'ograniczenie'
 INSERT INTO bolid VALUES('2','FWD','2100','300','200','FZ5')
 select * from bolid;
+
+--wyzwalacz4 który informuje użytkownika o wszelkich zmianach wprowadzonych w tabeli kierowca
+CREATE TRIGGER modif
+ON kierowca AFTER INSERT, UPDATE, DELETE
+AS 
+BEGIN	
+	SELECT 'Liczba zmodyfikowanych wierszy: ' + STR(@@ROWCOUNT)	AS'info'
+	SELECT 'Wiersze dodane: '	AS'info'
+	SELECT * FROM INSERTED 
+	SELECT 'Wiersze usunięte: '	AS'info'
+	SELECT * FROM DELETED	
+	
+END 
+GO 
+--sprawdzenie wyzwalacza 'modif'
+UPDATE kierowca SET imie='Przemek' WHERE id_kierowca=1;
+
+
+
+
+
+
+
+
+
 
 
 --usuwanie wszystkiego:
@@ -486,7 +503,7 @@ DROP VIEW widok2;
 DROP FUNCTION ile_kierowcow;
 DROP FUNCTION tekst;
 DROP FUNCTION wiek;
---DROP FUNCTION ;
+DROP FUNCTION Info;
 DROP PROCEDURE usun_zespol;
 DROP PROCEDURE dlugosc;
 DROP PROCEDURE dodaj_tor;
@@ -494,3 +511,4 @@ DROP PROCEDURE dodaj_zespol;
 DROP TRIGGER usuwanie;
 DROP TRIGGER przepisy;
 DROP TRIGGER ograniczenie;
+DROP TRIGGER modif;
