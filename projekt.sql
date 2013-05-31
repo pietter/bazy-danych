@@ -304,13 +304,12 @@ ON t.pogoda=p.id_pogoda
 ORDER BY t.id_tor_wyscigowy;
 
 --funkcja 3 obliczająca wiek danego kierowcy
-DROP FUNCTION wiek;
 CREATE FUNCTION wiek(
 @rok_ur varchar(4)
 )
 RETURNS varchar(4)
 AS
-BEGIN  
+BEGIN	
 	DECLARE @wiek varchar(4)	
 	SET @wiek=2013-@rok_ur	
 	RETURN @wiek
@@ -452,11 +451,24 @@ INSERT INTO kierowca
 SELECT * FROM kierowca;
 
 
---wyzwalacz 3 który jeszcze nie wiem co ma robić
---CREATE TIGGER
-
-
-
+--wyzwalacz 3 który ogranicza poj. silnika dodawanych pojazdów wg. wymogów ligi
+CREATE TRIGGER ograniczenie
+ON bolid AFTER INSERT
+AS
+BEGIN
+	DECLARE @pojemnosc INT
+	SELECT @pojemnosc=poj_silnika
+	FROM inserted WHERE poj_silnika>2000
+	IF @pojemnosc>2000
+		BEGIN
+		RAISERROR('Regulamin nie pozwala używać pojazdów z pojemnością powyżel 2.0L',1,2)
+		ROLLBACK
+		END
+END
+GO
+--sprawdzenie wyzwalacza 'ograniczenie'
+INSERT INTO bolid VALUES('2','FWD','2100','300','200','FZ5')
+select * from bolid;
 
 
 --usuwanie wszystkiego:
@@ -483,3 +495,4 @@ DROP PROCEDURE dodaj_tor;
 DROP PROCEDURE dodaj_zespol;
 DROP TRIGGER usuwanie;
 DROP TRIGGER przepisy;
+DROP TRIGGER ograniczenie;
