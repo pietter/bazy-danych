@@ -303,3 +303,29 @@ GROUP BY z.nazwa_zespolu,z.id_zespol
 HAVING COUNT(k.id_zespol)>=1;
 --wywołanie 'widok2'
 select nazwa_zespolu,kierowcy from widok2;
+
+
+--funkcja 1 podaje łączną sumę wszystkich kierowców w bazie danych
+CREATE FUNCTION ile_kierowcow()
+RETURNS INTEGER AS $$
+BEGIN
+RETURN (SELECT COUNT(*) FROM kierowca);
+END;
+$$ LANGUAGE plpgsql;
+--wywolanie
+SELECT ile_kierowcow();
+
+--procedura 1 dodawanie nowego kierowcy
+CREATE FUNCTION dodaj_tor (integer,integer,text,text,float,integer) RETURNS void AS $$
+DECLARE id ALIAS FOR $1;
+pogoda ALIAS FOR $2;
+nazwa ALIAS FOR $3;
+kraj ALIAS FOR $4;
+dlugosc ALIAS FOR $5;
+zakrety ALIAS FOR $6;
+BEGIN
+INSERT INTO tor_wyscigowy(id_tor_wyscigowy,id_pogoda,nazwa,kraj,dlugosc,liczba_zakretow) VALUES (id,pogoda,nazwa,kraj,dlugosc,zakrety);
+END;
+$$ LANGUAGE plpgsql;
+--wywołanie procedury
+SELECT dodaj_tor (8,3,'Knockhill','Wielka Brytania','6.7','8');
