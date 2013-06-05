@@ -235,3 +235,49 @@ INSERT INTO awaria VALUES(4,1,'XRT','awaria turbiny','Piotrek Krzyzanowski','Tea
 INSERT INTO awaria VALUES(5,5,'XRT','awaria ukl. kierowniczego','Lukasz Paszczyk','Drunked Team');
 INSERT INTO awaria VALUES(6,6,'FXO','awaria pompy paliwa','Piotrek Krzyzanowski','Team Vires');
 --select * from awaria;
+
+--podliczanie ilości wpisów
+SELECT (SELECT COUNT(*) FROM pogoda) AS "pogoda",
+(SELECT COUNT(*) FROM tor_wyscigowy) AS "tory_wyscigowe",
+(SELECT COUNT(*) FROM pensja_kierowcy) AS "pensje_kierowcy",
+(SELECT COUNT(*) FROM zespol) AS "zespoly",
+(SELECT COUNT(*) FROM kierowca) AS "kierowcy",
+(SELECT COUNT(*) FROM bolid) AS "bolidy",
+(SELECT COUNT(*) FROM wyscig) AS "wyscigi",
+(SELECT COUNT(*) FROM udzial) AS "udzial",
+(SELECT COUNT(*) FROM wyniki) AS "wyniki",
+(SELECT COUNT(*) FROM wypadek) AS "wypadki",
+(SELECT COUNT(*) FROM awaria) AS "awarie";
+
+--selecty
+SELECT b.nazwa, b.moc,z.nazwa_zespolu
+FROM bolid b JOIN zespol z
+ON b.id_zespol=z.id_zespol; 
+--wyswietla wszystkie bolidy, ich moc wraz z nazwą zespołu do którego należą.
+
+SELECT t.nazwa,t.kraj,t.dlugosc
+FROM wyscig w JOIN tor_wyscigowy t
+ON w.id_tor_wyscigowy=t.id_tor_wyscigowy;
+--wyswietla tory wyscigowe oraz kraje w ktorych się znajdują
+--w kolejności w której odbywał się wyścigi
+
+select imie,nazwisko,data_ur from kierowca order by data_ur DESC;
+--wyświetla kierowców od najmłodszego do najstarszego
+
+SELECT naped,COUNT(naped) as ilosc 
+from bolid 
+group by bolid.naped 
+order by count(naped) ASC;
+--wyświetla najczęściej stosowany typ napędu w pojazdach rosnąco.
+
+select wiatr,temperatura,zachmurzenie from pogoda where deszcz='brak';
+--pokazuje jaki był wiatr,remperatura i zachmurzenie w wyscigach w ktorych nie padało
+
+select poj_silnika,moc,nazwa from bolid where naped='FWD';
+--wyświetla wszystkie bolidy z napędem na przednie koła
+
+SELECT nazwa,COUNT(nazwa) as ilosc 
+from bolid 
+group by bolid.nazwa 
+order by count(nazwa) DESC;
+--wyświetla wszystkie auta w kolejności od najżadziej występujących do najczęściej
