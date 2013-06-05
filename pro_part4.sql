@@ -1,3 +1,4 @@
+--Piotr Krzyżanowski gr 4D nr indeksu 215586
 DROP TABLE IF EXISTS awaria CASCADE;
 DROP TABLE IF EXISTS wypadek CASCADE;
 DROP TABLE IF EXISTS wyniki CASCADE;
@@ -106,6 +107,7 @@ kierowca VARCHAR(45) NOT NULL,
 zespol VARCHAR(45) NOT NULL
 );
 --select * from awaria;
+
 
 --inserty
 
@@ -282,7 +284,6 @@ group by bolid.nazwa
 order by count(nazwa) DESC;
 --wyświetla wszystkie auta w kolejności od najżadziej występujących do najczęściej
 
-
 --widok1 wyświetla kierowców którzy brali udział w wyścigach wraz z ilością ich startów
 CREATE VIEW widok1 AS SELECT k.id_kierowca,k.imie,k.nazwisko,
 COUNT(u.id_kierowca) AS starty
@@ -303,7 +304,6 @@ GROUP BY z.nazwa_zespolu,z.id_zespol
 HAVING COUNT(k.id_zespol)>=1;
 --wywołanie 'widok2'
 select nazwa_zespolu,kierowcy from widok2;
-
 
 --funkcja 1 podaje łączną sumę wszystkich kierowców w bazie danych
 CREATE FUNCTION ile_kierowcow()
@@ -329,3 +329,37 @@ END;
 $$ LANGUAGE plpgsql;
 --wywołanie procedury
 SELECT dodaj_tor (8,3,'Knockhill','Wielka Brytania','6.7','8');
+
+--procedura 2 dodawanie nowego zespolu
+CREATE FUNCTION dodaj_zespol (integer,text,date,text) RETURNS void AS $$
+DECLARE id ALIAS FOR $1;
+nazwa ALIAS FOR $2;
+czas ALIAS FOR $3;
+zalozyciel ALIAS FOR $4;
+BEGIN
+INSERT INTO zespol(id_zespol,nazwa_zespolu,data_zalozenia,zalozyciel)
+VALUES(id,nazwa,czas,zalozyciel);
+END;
+$$ LANGUAGE plpgsql;
+--wywolanie procedury
+SELECT dodaj_zespol(6,'nazwa','1985-05-25','Zal Ozyciel');
+
+
+
+--usuwanie
+DROP TABLE awaria;
+DROP TABLE wypadek;
+DROP TABLE wyniki;
+DROP TABLE udzial;
+DROP TABLE wyscig;
+DROP TABLE bolid;
+DROP TABLE kierowca;
+DROP TABLE zespol;
+DROP TABLE pensja_kierowcy;
+DROP TABLE tor_wyscigowy;
+DROP TABLE pogoda;
+DROP VIEW widok1;
+DROP VIEW widok2;
+DROP FUNCTION ile_kierowcow();
+DROP FUNCTION dodaj_tor(integer,integer,text,text,float,integer);
+DROP FUNCTION dodaj_zespol(integer,text,date,text);
