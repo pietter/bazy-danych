@@ -281,3 +281,25 @@ from bolid
 group by bolid.nazwa 
 order by count(nazwa) DESC;
 --wyświetla wszystkie auta w kolejności od najżadziej występujących do najczęściej
+
+
+--widok1 wyświetla kierowców którzy brali udział w wyścigach wraz z ilością ich startów
+CREATE VIEW widok1 AS SELECT k.id_kierowca,k.imie,k.nazwisko,
+COUNT(u.id_kierowca) AS starty
+FROM kierowca k JOIN udzial u
+ON k.id_kierowca=u.id_kierowca
+GROUP BY k.id_kierowca,k.imie,k.nazwisko
+HAVING COUNT(u.id_kierowca)>0;
+--wywołanie 'widok1'
+select imie,nazwisko,starty from widok1
+ORDER BY starty DESC;
+
+--widok2 wyświetla zespoły które mają co najmniej j ednego kierowce
+CREATE VIEW widok2 AS SELECT z.nazwa_zespolu,z.id_zespol,
+COUNT(k.id_zespol) AS kierowcy
+FROM  zespol z JOIN kierowca k
+ON k.id_zespol=z.id_zespol
+GROUP BY z.nazwa_zespolu,z.id_zespol
+HAVING COUNT(k.id_zespol)>=1;
+--wywołanie 'widok2'
+select nazwa_zespolu,kierowcy from widok2;
